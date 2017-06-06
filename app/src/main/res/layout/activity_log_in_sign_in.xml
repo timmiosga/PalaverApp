@@ -10,7 +10,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="timmiosga.palaver.LogInSignIn">
 
-    <!-- Login progress -->
 
 
     <ScrollView

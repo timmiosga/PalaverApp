@@ -2,6 +2,7 @@ package timmiosga.palaver;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
@@ -168,7 +169,11 @@ public class FriendsList extends AppCompatActivity {
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 
                             String selectedItem = (String) parent.getItemAtPosition(position);
-                            Log.i("Selected: ",selectedItem);
+
+                            gotoChatActivity(selectedItem);
+
+
+
 
                         }
                     });
@@ -391,5 +396,17 @@ public class FriendsList extends AppCompatActivity {
         }
 
 
+    }
+
+
+    private void gotoChatActivity(String friend) {
+
+
+        Intent intent = new Intent(this, ChatActivity.class);
+        intent.putExtra("friend", friend);
+
+        startActivity(intent);
+
+        FriendsList.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
     }
 }
