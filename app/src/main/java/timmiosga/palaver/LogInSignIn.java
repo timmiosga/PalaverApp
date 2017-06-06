@@ -2,7 +2,9 @@ package timmiosga.palaver;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -58,7 +60,7 @@ public class LogInSignIn extends AppCompatActivity {
                     showError();
                 }else{
 
-                    validateAndLogin(username.getText().toString(),password.getText().toString());
+                    validateAndLoginSignUp(username.getText().toString(),password.getText().toString(),true);
                     // LogIn Process
                 }
             }
@@ -72,7 +74,7 @@ public class LogInSignIn extends AppCompatActivity {
                 }else{
 
 
-                    validateAndSignUp(username.getText().toString(),password.getText().toString());
+                    validateAndLoginSignUp(username.getText().toString(),password.getText().toString(),false);
 
                     // SignUp Process
                 }
@@ -105,7 +107,7 @@ public class LogInSignIn extends AppCompatActivity {
 
 
 
-private void validateAndLogin(final String username, final String password){
+private void validateAndLoginSignUp(final String username, final String password, final boolean loginSignUp){
 
     try {
         RequestQueue requestQueue = Volley.newRequestQueue(this);
@@ -120,28 +122,53 @@ private void validateAndLogin(final String username, final String password){
             @Override
             public void onResponse(String response) {
                 Log.i("VOLLEY", response);
-if (response.equals("0")){
+                if (loginSignUp) {
+                    if (response.equals("0")) {
 
-    //Benutzer nicht vorhanden. Fehler ausgeben!
+                        //Benutzer nicht vorhanden. Fehler ausgeben!
 
-    AlertDialog alertDialog = new AlertDialog.Builder(LogInSignIn.this).create();
-    alertDialog.setTitle("Error");
-    alertDialog.setMessage("The given account is not registered. Please sign up first!");
-    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-            new DialogInterface.OnClickListener() {
-                public void onClick(DialogInterface dialog, int which) {
-                    dialog.dismiss();
-                }
-            });
-    alertDialog.show();
+                        AlertDialog alertDialog = new AlertDialog.Builder(LogInSignIn.this).create();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("Your username/password-combination is incorrect.");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
 
-}else{
+                    } else {
 //Benutzer ist vorhanden. Einloggen!
-                    Login(username,password);
+                        Login(username, password);
 
-}
+                    }
 
+                }else{
 
+                    if (response.equals("0")){
+
+                        //Benutzer nicht vorhanden. Bei Paluno anmelden und einloggen!
+
+                        SignupAndLogin(username,password);
+                    }else{
+
+//Benutzer ist bereits vorhanden. Fehler ausgeben!
+
+                        AlertDialog alertDialog = new AlertDialog.Builder(LogInSignIn.this).create();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("The given username already exists. Please choose another one.");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
+
+                    }
+
+                }
 
             }
         }, new Response.ErrorListener() {
@@ -205,11 +232,12 @@ if (response.equals("0")){
 
 
 
-    private void validateAndSignUp(final String username, final String password){
+
+    private void SignupAndLogin(final String username, final String password) {
 
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = getString(R.string.Validation_URL);
+            String URL = getString(R.string.Register_URL);
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("Username", username);
             jsonBody.put("Password", password);
@@ -220,29 +248,13 @@ if (response.equals("0")){
                 @Override
                 public void onResponse(String response) {
                     Log.i("VOLLEY", response);
-                    if (response.equals("0")){
 
-                        //Benutzer nicht vorhanden. Bei Paluno anmelden und einloggen!
+                        if (response.equals("1")) {
 
-                        SignupAndLogin(username,password);
-                    }else{
+                            Login(username,password);
 
-//Benutzer ist bereits vorhanden. Fehler ausgeben!
-
-                        AlertDialog alertDialog = new AlertDialog.Builder(LogInSignIn.this).create();
-                        alertDialog.setTitle("Error");
-                        alertDialog.setMessage("The given username already exists. Please choose another one.");
-                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog, int which) {
-                                        dialog.dismiss();
-                                    }
-                                });
-                        alertDialog.show();
 
                     }
-
-
 
                 }
             }, new Response.ErrorListener() {
@@ -292,17 +304,20 @@ if (response.equals("0")){
 
             requestQueue.add(stringRequest);
 
-
         } catch (JSONException e) {
             e.printStackTrace();
         }
 
-    }
 
-    private void SignupAndLogin(String username, String password) {
     }
 
     private void Login(String username, String password) {
+
+        Bundle bundle = new Bundle();
+        bundle.putString("username", username);
+        bundle.putString("password", password);
+        startActivity(new Intent(this, FriendsList.class).putExtras(bundle));
+
     }
 
 }

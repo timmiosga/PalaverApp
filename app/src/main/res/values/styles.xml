@@ -8,6 +8,8 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="android:navigationBarColor">@android:color/holo_orange_light</item>
         <item name="android:textColorPrimary">@android:color/tertiary_text_dark</item>
+        <item name="android:actionMenuTextColor">@android:color/holo_orange_light</item>
+
     </style>
 
 </resources>

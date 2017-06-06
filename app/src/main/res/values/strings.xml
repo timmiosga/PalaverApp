@@ -15,5 +15,7 @@
         completions."
     </string>
     <string name="Validation_URL">"http://palaver.se.paluno.uni-due.de/api/user/validate/"</string>
+    <string name="Register_URL">"http://palaver.se.paluno.uni-due.de/api/user/register/"</string>
+    <string name="Friends_URL">"http://palaver.se.paluno.uni-due.de/api/friends/get/"</string>
 
 </resources>
