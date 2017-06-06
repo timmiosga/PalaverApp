@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".LogInSignIn" android:label="Palaver - Log In/Sign Up">
+        <activity android:name=".LogInSignIn" android:label="Palaver">
 
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

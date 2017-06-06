@@ -2,15 +2,18 @@ package timmiosga.palaver;
 
 import android.app.AlertDialog;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,15 +43,23 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 
+import static android.R.attr.id;
+import static android.R.id.list;
+
 //TODO BUILT THIS WITH FRAGMENTS!
 public class FriendsList extends AppCompatActivity {
+    public static final String PREFS_NAME = "MyPrefsFile";
+    private List<String> friends_list;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_friends_list);
 
-        Toast.makeText(this, "Welcome, "+this.getIntent().getExtras().getString("username")+". You were successfully logged in.",Toast.LENGTH_LONG).show();
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+
+        Toast.makeText(this, "Welcome, "+settings.getString("username","")+". You were successfully logged in.",Toast.LENGTH_LONG).show();
 
 
     }
@@ -58,14 +69,16 @@ public class FriendsList extends AppCompatActivity {
     {
         // TODO Auto-generated method stub
         super.onStart();
-        getAndListAllFriends(this.getIntent().getExtras().getString("username"),this.getIntent().getExtras().getString("password"));
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+        getAndListAllFriends(settings.getString("username",""),settings.getString("password",""));
 
 
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
+
         getMenuInflater().inflate(R.menu.main_menu, menu);
         return true;
     }
@@ -86,6 +99,9 @@ public class FriendsList extends AppCompatActivity {
             return true;
         }
         if (id == R.id.AddFriend) {
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+            addFriend(settings.getString("username",""),settings.getString("password",""));
 
             return true;
         }
@@ -95,6 +111,8 @@ public class FriendsList extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+
+
 
     private void getAndListAllFriends(String username, String password) {
 
@@ -122,29 +140,33 @@ public class FriendsList extends AppCompatActivity {
                             results[i] = (items[i]);
 
                         } catch (NumberFormatException nfe) {
-                            //NOTE: write something here if you need to recover from formatting errors
+
                         };
                     }
 
-                    Log.d("this is my array", "arr: " + results[0]);
+
                     final ListView lv = (ListView) findViewById(R.id.friendslist);
 
 
-                    // Create a List from String Array elements
-                    List<String> fruits_list = new ArrayList<String>(Arrays.asList(results));
+                    if (response.equals("[]")){
 
-                    // Create a ArrayAdapter from List
+                        results = new String[1];
+                        results[0]="Add a friend by clicking on the menu button.";
+                    }
+                    friends_list = new ArrayList<String>(Arrays.asList(results));
+
+
                     ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>
-                            (FriendsList.this, android.R.layout.simple_list_item_1, fruits_list);
+                            (FriendsList.this, android.R.layout.simple_list_item_1, friends_list);
 
-                    // Populate ListView with items from ArrayAdapter
+
                     lv.setAdapter(arrayAdapter);
 
-                    // Set an item click listener for ListView
+
                     lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                         @Override
                         public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                            // Get the selected item text from ListView
+
                             String selectedItem = (String) parent.getItemAtPosition(position);
                             Log.i("Selected: ",selectedItem);
 
@@ -182,6 +204,170 @@ public class FriendsList extends AppCompatActivity {
                             String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
                             JSONObject result = new JSONObject(json);
                             responseString=result.getString("Data");
+
+
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            requestQueue.add(stringRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+    }
+
+
+
+
+    private void addFriend(final String username, final String password) {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Add a Friend");
+        builder.setMessage("Please enter your friend's username.");
+
+
+        final EditText input = new EditText(this);
+
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        builder.setView(input);
+
+
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+
+
+               boolean notavailable=true;
+                for(String str: friends_list) {
+                    if(str.contains(input.getText().toString()))
+                        notavailable=false;
+                    break;
+                }
+                if (!input.getText().toString().equals(username)&&notavailable) {
+                    addFriendandRefresh(input.getText().toString(), username, password);
+                }if (!input.getText().toString().equals(username)&&notavailable==false){
+                    dialog.cancel();
+                    AlertDialog alertDialog = new AlertDialog.Builder(FriendsList.this).create();
+                    alertDialog.setTitle("Error");
+                    alertDialog.setMessage("This friend is already on your list.");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+
+                } if(input.getText().toString().equals(username)){
+
+                    AlertDialog alertDialog = new AlertDialog.Builder(FriendsList.this).create();
+                    alertDialog.setTitle("Error");
+                    alertDialog.setMessage("You entered your own username. You do not need a chat app to talk to yourself!");
+                    alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog, int which) {
+                                    dialog.dismiss();
+                                }
+                            });
+                    alertDialog.show();
+                }
+
+            }
+        });
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.show();
+
+    }
+
+    private void addFriendandRefresh(String friend, String username, String password) {
+
+
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = getString(R.string.AddAFriend_URL);
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("Username", username);
+            jsonBody.put("Password", password);
+            jsonBody.put("Friend", friend);
+
+            final String requestBody = jsonBody.toString();
+
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                    if (response.equals("0")) {
+                        AlertDialog alertDialog = new AlertDialog.Builder(FriendsList.this).create();
+                        alertDialog.setTitle("Error");
+                        alertDialog.setMessage("The given username does not exist. Your friend has not been added.");
+                        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "OK",
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        dialog.dismiss();
+                                    }
+                                });
+                        alertDialog.show();
+
+                    }else{
+                        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+                        getAndListAllFriends(settings.getString("username",""),settings.getString("password",""));
+
+
+                    }
+
+
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        try {
+                            String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                            JSONObject result = new JSONObject(json);
+                            responseString=result.getString("MsgType");
 
 
 

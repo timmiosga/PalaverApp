@@ -15,9 +15,13 @@
 
         <ListView
             android:id="@+id/friendslist"
-            android:layout_width="match_parent"
+
+            android:clickable="true"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
-            android:divider="?attr/dividerHorizontal"
-            android:scrollbars="horizontal" />
+            android:dividerHeight="1dp" >
+        </ListView>
+
+
     </LinearLayout>
 </android.support.constraint.ConstraintLayout>
