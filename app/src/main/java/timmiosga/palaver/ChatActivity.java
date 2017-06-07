@@ -25,15 +25,25 @@ import com.android.volley.toolbox.HttpHeaderParser;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
 
 public class ChatActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     ListView messagelist;
+
+    String[] sender;
+    String[] data;
+    Date[] dates;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -57,16 +67,18 @@ public class ChatActivity extends AppCompatActivity {
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 
 
+
+
         try {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
-            String URL = getString(R.string.AddAFriend_URL);
+            String URL = getString(R.string.GetConversation_URL);
             JSONObject jsonBody = new JSONObject();
             jsonBody.put("Username", settings.getString("username",""));
             jsonBody.put("Password", settings.getString("password",""));
             jsonBody.put("Recipient", friend);
 
             final String requestBody = jsonBody.toString();
-            System.out.println("REQUEST"+requestBody);
+          //  System.out.println("REQUEST"+requestBody);
 
 
             StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
@@ -74,8 +86,37 @@ public class ChatActivity extends AppCompatActivity {
                 public void onResponse(String response) {
                     Log.i("VOLLEY", response);
 
+                    try {
+                        JSONArray rootArray = new JSONArray(response);
+                        System.out.println("ROOT ARRAY: "+rootArray);
+                       sender = new String [rootArray.length()];
+                        data = new String [rootArray.length()];
+                       dates = new Date [rootArray.length()];
+
+                        for (int i=0;i<rootArray.length();i++){
+
+                            JSONObject jsonMessage = rootArray.getJSONObject(i);
+                            data[i] = jsonMessage.getString("Data");
+                            sender[i] = jsonMessage.getString("Sender");
+
+                            String dateStr = jsonMessage.getString("DateTime");
+                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS");
+
+                            dates[i] =  sdf.parse(dateStr);
 
 
+
+
+                        }
+                        setAdapter();
+
+
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    } catch (ParseException e) {
+                        e.printStackTrace();
+                    }
 
                 }
             }, new Response.ErrorListener() {
@@ -106,7 +147,6 @@ public class ChatActivity extends AppCompatActivity {
                         try {
                             String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
                             JSONObject result = new JSONObject(json);
-                           System.out.println("RESULT"+result);
                             responseString=result.getString("Data");
 
 
@@ -126,6 +166,7 @@ public class ChatActivity extends AppCompatActivity {
 
             requestQueue.add(stringRequest);
 
+
         } catch (JSONException e) {
             e.printStackTrace();
         }
@@ -136,11 +177,13 @@ public class ChatActivity extends AppCompatActivity {
 
 
 
+
+
+    }
+
+    private void setAdapter() {
         messagelist = (ListView) findViewById(R.id.messagelist);
-        messagelist.setAdapter(new CustomAdapter(this, new String[] { "tim",
-                "max","moritz"}, new String[]{"hallo","nochmal hallo","nochmal nochmal hallo"},new Date[]{new Date(),new Date(),new Date()}));
-
-
+        messagelist.setAdapter(new CustomAdapter(this,sender,data,dates));
     }
 
 
@@ -152,7 +195,9 @@ class CustomAdapter extends BaseAdapter {
     Context context;
     String[] senderOrRecipient;
     String[] data;
-    Date[]dates;
+    Date[] dates;
+
+    public static final String PREFS_NAME = "MyPrefsFile";
     private static LayoutInflater inflater = null;
 
     public CustomAdapter(Context context, String[] senderOrRecipient, String[] data, Date[]dates) {
@@ -192,9 +237,23 @@ class CustomAdapter extends BaseAdapter {
         TextView user = (TextView) vi.findViewById(R.id.message_user);
         TextView time = (TextView) vi.findViewById(R.id.message_time);
         TextView text = (TextView) vi.findViewById(R.id.message_text);
+
+
+
+        SharedPreferences settings = context.getSharedPreferences(PREFS_NAME, 0);
+
+
+        if (senderOrRecipient[position].equals(settings.getString("username",""))) {
+            user.setText("Me:");
+        }else{
+            user.setText(senderOrRecipient[position]+":");
+        }
         text.setText(data[position]);
-        user.setText(senderOrRecipient[position]);
-        time.setText(dates[position].toString());
+
+
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy, HH:mm", Locale.GERMANY);
+        time.setText(sdf.format(dates[position]).toString());
+
         return vi;
     }
 }
