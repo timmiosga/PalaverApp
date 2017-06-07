@@ -4,13 +4,16 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.SharedPreferences;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Editable;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -37,8 +40,10 @@ import java.util.Locale;
 
 public class ChatActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
-    ListView messagelist;
 
+
+    ListView messagelist;
+    String friend;
     String[] sender;
     String[] data;
     Date[] dates;
@@ -55,16 +60,107 @@ public class ChatActivity extends AppCompatActivity {
         // TODO Auto-generated method stub
         super.onStart();
 
+        friend = getIntent().getExtras().getString("friend");
+
+        FloatingActionButton myFab = (FloatingActionButton)  this.findViewById(R.id.fab);
+        final EditText textview = (EditText)this.findViewById(R.id.input);
+        myFab.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                sendText(textview.getText().toString(),friend,"text/plain");
+               textview.setText("");
+                updateList();
+            }
+        });
+
         updateList();
 
 
     }
 
+    private void sendText(String message, String friend, String mimetype) {
+
+        try {
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = getString(R.string.SendMessage_URL);
+            JSONObject jsonBody = new JSONObject();
+
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+
+
+            jsonBody.put("Username", settings.getString("username",""));
+            jsonBody.put("Password", settings.getString("password",""));
+            jsonBody.put("Recipient", friend);
+            jsonBody.put("Mimetype", mimetype);
+            jsonBody.put("Data", message);
+
+            final String requestBody = jsonBody.toString();
+
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                     Log.i("VOLLEY", response);
+
+
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        try {
+                            String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                            JSONObject result = new JSONObject(json);
+                            responseString=result.getString("MsgType");
+
+
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            requestQueue.add(stringRequest);
+
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+    }
+
     private void updateList() {
 
-        String friend = getIntent().getExtras().getString("friend");
-
-        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
 
 
 
@@ -73,6 +169,10 @@ public class ChatActivity extends AppCompatActivity {
             RequestQueue requestQueue = Volley.newRequestQueue(this);
             String URL = getString(R.string.GetConversation_URL);
             JSONObject jsonBody = new JSONObject();
+            SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+
+
             jsonBody.put("Username", settings.getString("username",""));
             jsonBody.put("Password", settings.getString("password",""));
             jsonBody.put("Recipient", friend);
@@ -84,11 +184,11 @@ public class ChatActivity extends AppCompatActivity {
             StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
                 @Override
                 public void onResponse(String response) {
-                    Log.i("VOLLEY", response);
+                   // Log.i("VOLLEY", response);
 
                     try {
                         JSONArray rootArray = new JSONArray(response);
-                        System.out.println("ROOT ARRAY: "+rootArray);
+                        //System.out.println("ROOT ARRAY: "+rootArray);
                        sender = new String [rootArray.length()];
                         data = new String [rootArray.length()];
                        dates = new Date [rootArray.length()];
