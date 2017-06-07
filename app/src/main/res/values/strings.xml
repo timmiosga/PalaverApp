@@ -18,6 +18,7 @@
     <string name="Register_URL">"http://palaver.se.paluno.uni-due.de/api/user/register/"</string>
     <string name="Friends_URL">"http://palaver.se.paluno.uni-due.de/api/friends/get/"</string>
     <string name="AddAFriend_URL">"http://palaver.se.paluno.uni-due.de/api/friends/add/"</string>
+    <string name="DeleteAFriend_URL">"http://palaver.se.paluno.uni-due.de/api/friends/remove/"</string>
     <string name="GetConversation_URL">"http://palaver.se.paluno.uni-due.de/api/message/get"</string>
     <string name="SendMessage_URL">"http://palaver.se.paluno.uni-due.de/api/message/send"</string>
 

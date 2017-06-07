@@ -16,6 +16,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.NumberPicker;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -89,11 +91,17 @@ public class FriendsList extends AppCompatActivity {
 
         int id = item.getItemId();
         if (id == R.id.signout) {
-            Toast.makeText(this, "You will be signed out...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "You will be logged out...", Toast.LENGTH_SHORT).show();
 
             new Handler().postDelayed(new Runnable() {
                 @Override
                 public void run() {
+
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+                    SharedPreferences.Editor editor = settings.edit();
+                    editor.clear();
+                    editor.commit();
+
                     finish();
                 }
             }, 2000);
@@ -108,11 +116,141 @@ public class FriendsList extends AppCompatActivity {
         }
         if (id == R.id.DeleteFriend) {
 
+            RelativeLayout linearLayout = new RelativeLayout(this);
+            final NumberPicker aNumberPicker = new NumberPicker(this);
+            aNumberPicker.setDescendantFocusability(NumberPicker.FOCUS_BLOCK_DESCENDANTS);
+            aNumberPicker.setWrapSelectorWheel(false);
+            aNumberPicker.setMaxValue(friends_list.size());
+            aNumberPicker.setMinValue(1);
+
+            String[] arr = new String[friends_list.size()];
+            arr = friends_list.toArray(arr);
+            aNumberPicker.setDisplayedValues(arr);
+
+            RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(50, 50);
+            RelativeLayout.LayoutParams numPicerParams = new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
+            numPicerParams.addRule(RelativeLayout.CENTER_HORIZONTAL);
+
+            linearLayout.setLayoutParams(params);
+            linearLayout.addView(aNumberPicker,numPicerParams);
+
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(this);
+            alertDialogBuilder.setTitle("Select a friend");
+            alertDialogBuilder.setView(linearLayout);
+            alertDialogBuilder
+                    .setCancelable(false)
+                    .setPositiveButton("Delete",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                                    int id) {
+                                    deleteFriendAndRefresh(aNumberPicker.getValue()-1);
+
+
+                                }
+                            })
+                    .setNegativeButton("Cancel",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                                    int id) {
+                                    dialog.cancel();
+                                }
+                            });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.show();
+
+
             return true;
         }
         return super.onOptionsItemSelected(item);
     }
 
+    private void deleteFriendAndRefresh(int value) {
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+
+        try {
+
+            System.out.println("FRIEND TO DELETE: "+friends_list.get(value));
+
+            RequestQueue requestQueue = Volley.newRequestQueue(this);
+            String URL = getString(R.string.DeleteAFriend_URL);
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("Username", settings.getString("username",""));
+            jsonBody.put("Password", settings.getString("password",""));
+            jsonBody.put("Friend", friends_list.get(value));
+
+            final String requestBody = jsonBody.toString();
+
+
+            StringRequest stringRequest = new StringRequest(Request.Method.POST, URL, new Response.Listener<String>() {
+                @Override
+                public void onResponse(String response) {
+                    Log.i("VOLLEY", response);
+                    SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+
+                    getAndListAllFriends(settings.getString("username",""),settings.getString("password",""));
+
+
+
+
+                }
+            }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    Log.e("VOLLEY", error.toString());
+                }
+            }) {
+                @Override
+                public String getBodyContentType() {
+                    return "application/json; charset=utf-8";
+                }
+
+                @Override
+                public byte[] getBody() throws AuthFailureError {
+                    try {
+                        return requestBody == null ? null : requestBody.getBytes("utf-8");
+                    } catch (UnsupportedEncodingException uee) {
+                        VolleyLog.wtf("Unsupported Encoding while trying to get the bytes of %s using %s", requestBody, "utf-8");
+                        return null;
+                    }
+                }
+
+                @Override
+                protected Response<String> parseNetworkResponse(NetworkResponse response) {
+                    String responseString = "";
+                    if (response != null) {
+                        try {
+                            String json = new String(response.data, HttpHeaderParser.parseCharset(response.headers));
+                            JSONObject result = new JSONObject(json);
+                            responseString=result.getString("Info");
+
+
+
+                        } catch (UnsupportedEncodingException e) {
+                            e.printStackTrace();
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+                    }
+
+
+
+                    return Response.success(responseString, HttpHeaderParser.parseCacheHeaders(response));
+                }
+            };
+
+            requestQueue.add(stringRequest);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
+
+
+
+
+    }
 
 
     private void getAndListAllFriends(String username, String password) {
@@ -170,8 +308,9 @@ public class FriendsList extends AppCompatActivity {
 
                             String selectedItem = (String) parent.getItemAtPosition(position);
 
-                            gotoChatActivity(selectedItem);
-
+                            if (!selectedItem.equals("Add a friend by clicking on the menu button.")) {
+                                gotoChatActivity(selectedItem);
+                            }
 
 
 

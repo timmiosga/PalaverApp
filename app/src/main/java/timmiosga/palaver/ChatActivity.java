@@ -57,10 +57,15 @@ public class ChatActivity extends AppCompatActivity {
     @Override
     protected void onStart()
     {
+
         // TODO Auto-generated method stub
         super.onStart();
 
+
+
+
         friend = getIntent().getExtras().getString("friend");
+        setTitle(friend);
 
         FloatingActionButton myFab = (FloatingActionButton)  this.findViewById(R.id.fab);
         final EditText textview = (EditText)this.findViewById(R.id.input);
@@ -68,7 +73,7 @@ public class ChatActivity extends AppCompatActivity {
             public void onClick(View v) {
                 sendText(textview.getText().toString(),friend,"text/plain");
                textview.setText("");
-                updateList();
+
             }
         });
 
@@ -102,7 +107,7 @@ public class ChatActivity extends AppCompatActivity {
                 public void onResponse(String response) {
                      Log.i("VOLLEY", response);
 
-
+                    updateList();
 
                 }
             }, new Response.ErrorListener() {

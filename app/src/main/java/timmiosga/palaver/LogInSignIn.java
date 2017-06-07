@@ -1,10 +1,12 @@
 package timmiosga.palaver;
 
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Handler;
 import android.support.design.widget.Snackbar;
 import android.support.design.widget.TextInputEditText;
 import android.support.v7.app.AppCompatActivity;
@@ -12,8 +14,10 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.NetworkResponse;
@@ -47,10 +51,26 @@ public class LogInSignIn extends AppCompatActivity {
         setContentView(R.layout.activity_log_in_sign_in);
 
 
+        final TextInputEditText username   = (TextInputEditText)findViewById(R.id.username);
+        final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        System.out.println("USERNAME: "+settings.getString("username",""));
+        if (settings.getString("username","")!=null){
+
+            username.setText(settings.getString("username",""));
+            password.setText(settings.getString("password",""));
+            Login(settings.getString("username",""),settings.getString("password",""));
+
+        }else{
+
+            username.setText("");
+            password.setText("");
+        }
 
 
-       final TextInputEditText username   = (TextInputEditText)findViewById(R.id.username);
-       final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
+
+
 
         Button login = (Button) findViewById(R.id.log_in_button);
         Button signup = (Button) findViewById(R.id.sign_up_button);
@@ -321,10 +341,28 @@ private void validateAndLoginSignUp(final String username, final String password
 
         editor.commit();
 
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
 
-        Intent intent = new Intent(this, FriendsList.class);
+        Toast.makeText(this, "You will be logged in...", Toast.LENGTH_SHORT).show();
 
-        startActivity(intent);
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                start();
+
+            }
+        }, 2000);
+
+
+
+    }
+
+    private void start() {
+        startActivity(new Intent(this, FriendsList.class));
     }
 
 }

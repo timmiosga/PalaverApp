@@ -10,12 +10,12 @@
         app:showAsAction="never" />
     <item
         android:id="@+id/DeleteFriend"
-        android:title="Edit your Friendslist"
+        android:title="Delete a friend"
         app:showAsAction="never" />
 
     <item
         android:id="@+id/signout"
-        android:title="Signout"
+        android:title="Log Out"
         app:showAsAction="never" />
 
 </menu>
