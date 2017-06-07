@@ -55,8 +55,9 @@ public class LogInSignIn extends AppCompatActivity {
         final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
-        System.out.println("USERNAME: "+settings.getString("username",""));
-        if (settings.getString("username","")!=null){
+
+        if (!settings.getString("username","").equals("")){
+
 
             username.setText(settings.getString("username",""));
             password.setText(settings.getString("password",""));
@@ -80,6 +81,8 @@ public class LogInSignIn extends AppCompatActivity {
                 if (checkEditTextinCorrect(username,password)){
                     showError();
                 }else{
+                    showToast();
+
 
                     validateAndLoginSignUp(username.getText().toString(),password.getText().toString(),true);
                     // LogIn Process
@@ -94,6 +97,7 @@ public class LogInSignIn extends AppCompatActivity {
                     showError();
                 }else{
 
+                    showToast();
 
                     validateAndLoginSignUp(username.getText().toString(),password.getText().toString(),false);
 
@@ -103,6 +107,16 @@ public class LogInSignIn extends AppCompatActivity {
         });
 
 
+    }
+
+    private void showToast() {
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
+
+        Toast.makeText(this, "You will be logged in...", Toast.LENGTH_SHORT).show();
     }
 
     private void showError() {
@@ -341,13 +355,7 @@ private void validateAndLoginSignUp(final String username, final String password
 
         editor.commit();
 
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-        }
 
-        Toast.makeText(this, "You will be logged in...", Toast.LENGTH_SHORT).show();
 
         new Handler().postDelayed(new Runnable() {
             @Override
@@ -363,6 +371,10 @@ private void validateAndLoginSignUp(final String username, final String password
 
     private void start() {
         startActivity(new Intent(this, FriendsList.class));
+        final TextInputEditText username   = (TextInputEditText)findViewById(R.id.username);
+        final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
+        username.setText("");
+        password.setText("");
     }
 
 }

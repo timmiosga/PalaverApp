@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:textStyle="normal|bold" />
+         />
 
     <TextView
         android:id="@+id/message_time"
@@ -25,8 +25,8 @@
         android:layout_height="wrap_content"
         android:layout_alignParentStart="true"
         android:layout_below="@id/message_user"
-        android:layout_marginTop="5dp"
-        android:textAppearance="@style/TextAppearance.AppCompat.Body1"
-        android:textSize="18sp" />
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+       />
 
 </RelativeLayout>

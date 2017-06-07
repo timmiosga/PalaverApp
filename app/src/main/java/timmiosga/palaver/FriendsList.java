@@ -50,6 +50,10 @@ import static android.R.attr.id;
 import static android.R.id.list;
 
 //TODO BUILT THIS WITH FRAGMENTS!
+//TODO PUSH WITH GCM SO THAT MESSAGES ARE BEING ALSO PUSHED IN THE CHATACTIVITY (AND IF YOU CLICK ON THE NOTIFICATION FROM OUTSIDE THAT THE APP DIRECTLY GOES TO THE RIGHT CONVERSATION)
+//TODO PALAVER ICON
+//TODO SQLITE DATABSE FOR BETTER PERFORMANCE (WITH REQUEST AT TIMES)
+
 public class FriendsList extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     private List<String> friends_list;

@@ -65,7 +65,7 @@ public class ChatActivity extends AppCompatActivity {
 
 
         friend = getIntent().getExtras().getString("friend");
-        setTitle(friend);
+        setTitle("Chat with "+friend);
 
         FloatingActionButton myFab = (FloatingActionButton)  this.findViewById(R.id.fab);
         final EditText textview = (EditText)this.findViewById(R.id.input);
