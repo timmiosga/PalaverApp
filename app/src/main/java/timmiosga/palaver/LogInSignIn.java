@@ -370,6 +370,7 @@ private void validateAndLoginSignUp(final String username, final String password
     }
 
     private void start() {
+
         startActivity(new Intent(this, FriendsList.class));
         final TextInputEditText username   = (TextInputEditText)findViewById(R.id.username);
         final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
