@@ -38,6 +38,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import timmiosga.palaver.gcm.NetworkThread;
+
 public class ChatActivity extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
 
@@ -53,7 +55,22 @@ public class ChatActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_chat);
+
+
     }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("actualFriend", null);
+
+        editor.commit();
+    }
+
     @Override
     protected void onStart()
     {
@@ -66,6 +83,13 @@ public class ChatActivity extends AppCompatActivity {
 
         friend = getIntent().getExtras().getString("friend");
         setTitle("Chat with "+friend);
+
+        SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putString("actualFriend", friend);
+
+        editor.commit();
+
 
         FloatingActionButton myFab = (FloatingActionButton)  this.findViewById(R.id.fab);
         final EditText textview = (EditText)this.findViewById(R.id.input);
@@ -106,6 +130,7 @@ public class ChatActivity extends AppCompatActivity {
                 @Override
                 public void onResponse(String response) {
                      Log.i("VOLLEY", response);
+
 
                     updateList();
 
@@ -165,7 +190,6 @@ public class ChatActivity extends AppCompatActivity {
     }
 
     private void updateList() {
-
 
 
 

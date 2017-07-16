@@ -40,6 +40,8 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import timmiosga.palaver.gcm.NetworkThread;
+
 public class LogInSignIn extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     @Override
@@ -347,6 +349,9 @@ private void validateAndLoginSignUp(final String username, final String password
     }
 
     private void Login(String username, String password) {
+
+
+        (new NetworkThread(this)).start();
 
         SharedPreferences settings = getSharedPreferences(PREFS_NAME, 0);
         SharedPreferences.Editor editor = settings.edit();
