@@ -1,8 +1,11 @@
 package timmiosga.palaver;
 
 import android.app.AlertDialog;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Handler;
@@ -10,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -53,6 +57,40 @@ import static android.R.id.list;
 public class FriendsList extends AppCompatActivity {
     public static final String PREFS_NAME = "MyPrefsFile";
     private List<String> friends_list;
+
+
+
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+
+
+
+            String toastext = intent.getStringExtra("sender")+": "+intent.getStringExtra("message");
+
+            Toast toast= Toast.makeText(getApplicationContext(),
+                    toastext, Toast.LENGTH_SHORT);
+            toast.setGravity(Gravity.TOP|Gravity.CENTER_HORIZONTAL, 0, 0);
+            toast.show();
+
+        }
+    };
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        this.unregisterReceiver(mMessageReceiver);
+
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        this.registerReceiver(mMessageReceiver, new IntentFilter("updateintent"));
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
