@@ -23,5 +23,11 @@
     <string name="SendMessage_URL">"http://palaver.se.paluno.uni-due.de/api/message/send"</string>
     <string name="RefreshPush">"http://palaver.se.paluno.uni-due.de/api/user/pushtoken"</string>
 
+    <string name="title_activity_fullscreen">FullscreenActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+
+    <string name="title_activity_loading">Loading</string>
+
 
 </resources>

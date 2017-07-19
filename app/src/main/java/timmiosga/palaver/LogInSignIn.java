@@ -53,6 +53,7 @@ public class LogInSignIn extends AppCompatActivity {
         setContentView(R.layout.activity_log_in_sign_in);
 
 
+
         final TextInputEditText username   = (TextInputEditText)findViewById(R.id.username);
         final TextInputEditText password   = (TextInputEditText)findViewById(R.id.password);
 
@@ -66,7 +67,7 @@ public class LogInSignIn extends AppCompatActivity {
             Login(settings.getString("username",""),settings.getString("password",""));
 
         }else{
-
+            startActivity(new Intent(this, Loading.class));
             username.setText("");
             password.setText("");
         }
